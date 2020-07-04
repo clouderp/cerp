@@ -1,0 +1,50 @@
+version: '2.4'
+services:
+  web:
+    image: cerp/odoo:cerp-${ODOO_VERSION}
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - ${PWD}/composition/odoo.conf:/etc/odoo/odoo.conf
+      - ${PWD}/addons:/mnt/addons
+      - ${PWD}/extra-addons:/mnt/extra-addons
+      - ${PWD}/odoo-data:/var/lib/odoo
+      - ${PWD}/scripts:/mnt/scripts
+      - ${PWD}/odoo:/usr/lib/python3/dist-packages/odoo
+    command: odoo --dev=pdb --addons-path=/mnt/addons,/mnt/extra-addons
+
+  db:
+    image: postgres:10
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+    volumes:
+      - ${PWD}/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web-test:
+    image: cerp/odoo:testing-${ODOO_VERSION}
+    depends_on:
+      - test-db
+    volumes:
+      - ${PWD}/addons:/mnt/addons
+      - ${PWD}/extra-addons:/mnt/extra-addons
+      - ${PWD}/coverage:/mnt/coverage
+      - ${PWD}/tmp/cache:/var/lib/odoo/.cache
+    command: runtests
+
+  test-db:
+    image: postgres:10
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+    volumes:
+      - ${PWD}/testdata:/var/lib/postgresql/data
