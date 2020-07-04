@@ -1,0 +1,20 @@
+# https://travis-ci.org/#!/clouderp/cerp
+
+dist: bionic
+
+env:
+  jobs:
+    - ODOO_VERSION=11
+    - ODOO_VERSION=12
+    - ODOO_VERSION=13
+
+install:
+  - make testenv
+
+script:
+  - export COMPOSE_FILE=./composition/docker-compose.yml
+  - export ci_env=`bash <(curl -s https://codecov.io/env)`
+  - docker-compose run $ci_env --rm web-test runtests cerp_core
+  - docker-compose run $ci_env --rm web-test runtests cerp_basic
+  - docker-compose run $ci_env --rm web-test runtests cerp_aws_basic
+  - shellcheck -x scripts/*
