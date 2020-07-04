@@ -1,0 +1,21 @@
+<odoo>
+  <data>
+    <menuitem
+	name="Cloud"
+	id="cerp_basic.menu_root"
+	action="cerp_core.action_window"
+	groups="base.group_user" />
+    <menuitem
+	name="Logs"
+	id="cerp_basic.menu_logs"
+	action="cerp_core.action_logs_window"
+	parent="cerp_basic.menu_root"
+	groups="base.group_user" />
+    <menuitem
+	name="Configuration"
+	id="cerp_basic.menu_configuration"
+	action="cerp_core.action_configuration_window"
+	parent="cerp_basic.menu_root"
+	groups="base.group_user" />
+  </data>
+</odoo>

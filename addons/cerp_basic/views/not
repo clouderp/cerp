@@ -1,0 +1,81 @@
+
+              <div t-attf-class="oe_kanban_global_click">
+
+                        <div class="oe_module_desc" t-att-title="record.shortdesc.value">
+                          <h4 class="o_kanban_record_title">
+                            <field name="shortdesc"/>&amp;nbsp;
+                          </h4>
+                          <p class="oe_module_name">
+                            <field groups="!base.group_no_one" name="summary"/>
+                            <code groups="base.group_no_one"><field name="name"/></code>
+                          </p>
+                          <div class="oe_module_action">
+                            <a t-att-href="record.website.raw_value" target="_blank" attrs="{'invisible':[('website', '=', '')]}" class="btn btn-sm btn-secondary float-right" role="button">Learn More</a>
+                            <a type="edit" class="btn btn-secondary btn-sm float-right" role="button" attrs="{'invisible': [('website', '&lt;&gt;', '')]}">Module Info</a>
+                            <button type="object" class="btn btn-primary btn-sm" name="button_immediate_install" states="uninstalled" t-if="! record.to_buy.raw_value">Install</button>
+                            <a href="https://odoo.com/pricing?utm_source=db&amp;utm_medium=module#hosting=on_premise" class="btn btn-info btn-sm" states="uninstalled,uninstallable" t-if="record.to_buy.raw_value" role="button">Upgrade</a>
+                            <div t-if="installed" class="text-muted float-left">Installed</div>
+                            <button states="to remove" type="object" class="btn btn-sm btn-primary" name="button_uninstall_cancel">Cancel Uninstall</button>
+                            <button states="to install" type="object" class="btn btn-sm btn-primary" name="button_install_cancel">Cancel Install</button>
+                          </div>
+                        </div>
+                      </div>
+                    </t>
+
+
+
+                <div class="oe_kanban_details">
+                  <h4 class="o_kanban_record_title">
+                    <field name="shortdesc"/>&amp;nbsp;
+                  </h4>
+                </div>
+                <div>
+		  <field name="provider_module" />
+		</div>
+
+		</div>
+
+
+                    <a t-if="record.website.raw_value"
+		       role="menuitem"
+		       class="dropdown-item"
+		       t-att-href="record.website.raw_value"
+		       target="_blank">Learn More</a>
+                    <a t-if="installed"
+		       name="button_immediate_upgrade"
+		       type="object"
+		       role="menuitem"
+		       class="dropdown-item">Upgrade</a>
+                    <a t-if="installed"
+		       name="button_uninstall_wizard"
+		       type="object"
+		       role="menuitem"
+		       class="dropdown-item">Uninstall</a>
+
+
+<record
+	id="cerp_basic.action_providers_window"
+	model="ir.actions.act_window">
+      <field name="name">Cloud account providers</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_basic.account_provider</field>
+      <field name="view_mode">kanban,tree</field>
+    </record>
+
+    <menuitem
+	name="Providers"
+	id="cerp_basic.menu_providers"
+	action="cerp_basic.action_providers_window"
+	parent="cerp_basic.menu_root"
+	groups="base.group_user" />
+
+    <record model="ir.ui.view" id="cerp_basic.account_provider_tree_view">
+      <field name="name">Cloud providers</field>
+      <field name="model">cerp_basic.account_provider</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="module"/>
+        </tree>
+      </field>
+    </record>
