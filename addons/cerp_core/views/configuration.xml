@@ -1,0 +1,105 @@
+<odoo>
+  <data>
+
+    <record
+	model="ir.ui.view"
+	id="cerp_core.configuration_kanban_view">
+      <field name="name">Cloud providers</field>
+      <field name="model">ir.module.module</field>
+      <field name="inherit_id" ref="base.module_view_kanban"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <data>
+          <xpath
+              expr="//templates"
+              position='before'>
+            <field name="cerp_provider_account"/>
+	  </xpath>
+          <xpath
+              expr="//div[hasclass('oe_module_action')]"
+              position='replace'>
+	    <div class="oe_module_action">
+	      <div>XXX</div>
+	      <button
+		  type="object"
+		  class="btn btn-primary btn-sm"
+		  name="button_immediate_install">Upgrade to pro</button>
+	      <button
+		  type="object"
+		  class="btn btn-primary btn-sm"
+		  name="button_immediate_install"
+		  states="uninstalled">Install</button>
+	      <t states="installed">
+		<button
+		    type="object"
+		    class="btn btn-sm btn-secondary float-right"
+		    name="button_configure_account"
+		    attrs="{'invisible': [('cerp_provider_account', '!=', False)]}">
+		  Configure account
+		</button>
+		<button
+		    type="object"
+		    class="btn btn-sm btn-secondary float-right"
+		    name="button_configure_account"
+		    attrs="{'invisible': [('cerp_provider_account', '==', False)]}">
+		  Reconfigure account
+		</button>
+	      </t>
+	    </div>
+          </xpath>
+        </data>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="cerp_core.account_form_view">
+      <field name="name">Create: Cloud account</field>
+      <field name="model">cerp_core.account</field>
+      <field name="arch" type="xml">
+        <form
+	    create="false"
+	    delete="false">
+          <sheet>
+            <group colspan='4'>
+              <field
+		  name="credentials_input"
+		  class="oe_edit_only"/>
+              <field
+		  name="credentials"
+		  class="oe_read_only"/>
+	      <field
+		  name="provider"
+		  readonly="1" />
+	    </group>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <record
+	id="cerp_core.action_configuration_window"
+	model="ir.actions.act_window">
+      <field name="name">Cloud configuration</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">ir.module.module</field>
+      <field name="domain">[('name', '=like', 'cerp_%'), ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro'])]</field>
+      <field name="help">Configuration help...</field>
+      <field name="view_mode">kanban,tree</field>
+    </record>
+    <record
+	model="ir.actions.act_window.view"
+	id="cerp_core.action_configuration_window_kanban">
+      <field name="sequence" eval="1"/>
+      <field name="view_mode">kanban</field>
+      <field name="view_id" ref="cerp_core.configuration_kanban_view"/>
+      <field name="act_window_id" ref="cerp_core.action_configuration_window"/>
+    </record>
+    <record
+	id="cerp_core.action_configure_window"
+	model="ir.actions.act_window">
+      <field name="name">Account</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_core.account</field>
+      <field name="view_mode">form</field>
+    </record>
+  </data>
+</odoo>

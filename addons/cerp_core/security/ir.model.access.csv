@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cerp_core_cerp_core_account,Cloud ERP account permission,model_cerp_core_account,,1,1,1,1
+access_cerp_core_cerp_core_account_provider,Cloud ERP account provider permission,model_cerp_core_account_provider,,1,1,1,1
+access_cerp_core_cerp_core_log,Cloud ERP log permission,model_cerp_core_log,,1,1,1,1
+access_cerp_core_cerp_core_metric,Cloud ERP metric permission,model_cerp_core_metric,,1,1,1,1

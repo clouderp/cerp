@@ -1,0 +1,16 @@
+<odoo>
+  <data>
+    <record model="cerp_core.metric.type" id="cerp_core.metric_cost_actual">
+      <field name="name">cost.actual</field>
+      <field name="scope">total</field>
+    </record>
+    <record model="cerp_core.metric.type" id="cerp_core.metric_cost_forecast">
+      <field name="name">cost.forecast</field>
+      <field name="scope">total</field>
+    </record>
+    <record model="cerp_core.metric.type" id="cerp_core.metric_cost_current">
+      <field name="name">cost.current</field>
+      <field name="scope">total</field>
+    </record>
+  </data>
+</odoo>
