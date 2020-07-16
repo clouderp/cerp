@@ -1,0 +1,34 @@
+{
+    "addons": [{
+	"preserve": [
+	    "__manifest__.py",
+	    "adapter",
+	    "adapter.py",
+	    "constants.py",
+	    "utils.py",
+	    "static",
+	    "tests"
+	],
+	"template": "templates/addon",
+	"modules": [
+	    "addons/cerp_*_basic"
+	]
+    }],
+    "assets": [{
+	"config": "templates/icon/config.json",
+	"extra": [
+	    "templates/icon/*svg"
+	],
+	"modules": [
+	    "addons/cerp_*_basic"
+	]
+    }],
+    "release": [{
+	"repo": "git@github.com:clouderp/odoo-cerp_basic",
+	"modules": [
+	    "addons/cerp_basic",
+	    "addons/cerp_core",
+	    "addons/cerp_*_basic"
+	]
+    }]
+}
