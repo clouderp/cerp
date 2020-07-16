@@ -1,0 +1,126 @@
+#!/bin/bash
+
+# shellcheck source=./scripts/common
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+
+create_icon_config () {
+    local addon config iconconfig iconconfigpath scale x y
+    addon="$1"
+    config="$2"
+    ADDON="$(basename "$addon")"
+    export ADDON
+    # shellcheck disable=SC2016
+    iconconfig="$(envsubst '$ADDON' < "$config")"
+    iconconfigpath="$(get_icon_config_path "$addon")"
+
+    if [ -f "$iconconfigpath" ]; then
+	scale="$(jq -r '.scale' "$iconconfigpath")"
+	x="$(jq -r '.x' "$iconconfigpath")"
+	y="$(jq -r '.y' "$iconconfigpath")"
+	echo "$iconconfig" \
+	    | jq -r ".assets[1].scale = $scale" \
+	    | jq -r ".assets[1].x = $x" \
+	    | jq -r ".assets[1].y = $y"
+    else
+	echo "$iconconfig"
+    fi
+}
+
+get_icon_should_update () {
+    local addon configchanged \
+	  iconcommit iconconfigpath iconpath iconsrc \
+	  srcchanged
+    addon="$1"
+    iconconfigpath="$(get_icon_config_path "$addon")"
+    iconpath="$(get_icon_path "$addon")"
+    iconsrc="$(get_icon_src "$addon")"
+
+    if [ -z "$FORCE_BUILD" ]; then
+	echo 1
+	return
+    fi
+
+    if [ ! -f "$iconsrc" ]; then
+	return
+    fi
+
+    if [ -f "$iconpath" ]; then
+	iconcommit="$(get_last_commit "$iconpath")"
+	if [ -z "$iconcommit" ]; then
+	    echo 1
+	else
+	    echo "Last commit to icon ($addon) was: $iconcommit, checking src and config";
+	    srcchanged="$(git diff "$iconcommit" "$iconsrc")"
+	    if [ -f "$iconconfigpath" ]; then
+		configchanged="$(git diff "$iconcommit" "$iconconfigpath")"
+	    fi
+	    if [[ -n "$srcchanged" || -n "$configchanged" ]]; then
+		echo 1
+	    fi
+	fi
+    else
+	echo 1
+    fi
+}
+
+create_icon () {
+    local addon assetconfig iconconfig iconsrc
+    addon="$1"
+    config="$2"
+    if [ -z "$(get_icon_should_update "$addon")" ]; then
+	echo "Nothing changed ($addon), skipping"
+	return
+    fi
+    iconsrc="$(get_icon_src "$addon")"
+    cp -a "$iconsrc" "$(get_icon_asset_path "$(basename "$addon")")"
+    iconconfig="$(create_icon_config "$addon" "$config")"
+    assetconfig="$(get_asset_config_path)"
+    if [ ! -f "$assetconfig" ]; then
+	echo "$iconconfig" | jq '[.]' > "$assetconfig"
+    else
+	jq --argjson iconconfig \
+	   "$iconconfig" '. |= .+ [$iconconfig]' "$assetconfig" \
+	   | sponge "$assetconfig"
+    fi
+}
+
+create_icons () {
+    local assets modules
+    assets="$1"
+    create_asset_dir
+    create_build_dir
+    modules=$(echo "$assets" | jq -r '.modules[]')
+    config=$(echo "$assets" | jq -r '.config')
+    extra=$(echo "$assets" | jq -r '.extra[]')
+    echo "creating icon set for $modules"
+    for addon in $modules; do
+	create_icon "$addon" "$config"
+    done
+    build_icons "$config" "$extra"
+}
+
+build_icons () {
+    local config extra
+    config="$1"
+    extra="$2"
+    if [ ! -f "$(get_asset_config_path)" ]; then
+	echo "Nothing to be built in $ASSET_DIR"
+	return
+    fi
+    echo "There are icons to be built in $ASSET_DIR"
+    copy_extra "$extra"
+    run_icon_builder
+    for asset in $(get_built_assets); do
+	copy_built_asset "$asset"
+    done
+}
+
+iterate_icon_sets () {
+    for assets in $(get_assets); do
+	create_icons "$assets"
+    done
+
+}
+
+iterate_icon_sets

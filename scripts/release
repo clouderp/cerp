@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# shellcheck source=./scripts/common
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+
+fetch_release_repo () {
+    local release_dir release_repo
+    release_repo="$1"
+    release_dir="$(basename "$release_repo")"
+    echo "fetching repo: $release_repo"
+    cd "$RELEASE_DIR" || exit 1
+    git clone "$release_repo"
+    cd "$release_dir" || exit 1
+    git fetch origin
+    # shellcheck disable=SC2143
+    if [ "$(git branch -a | grep -q "^$ODOO_VERSION$")" ]; then
+	git checkout "origin/$ODOO_VERSION"
+    else
+	git checkout -b "$ODOO_VERSION"
+    fi
+    rm -rf ./*
+    cd "$REPO_ROOT" || exit 1
+}
+
+copy_release_files () {
+    local module modules release release_dir repo
+    modules="$1"
+    release_dir="$2"
+    for module in $modules; do
+	for file in $(git ls-tree HEAD -r "$module" | rev | cut -f1 | rev | grep -v tests | grep -v i18n); do
+	    # this might not work correctly with abs paths
+	    slashes="${release_dir//[!\/]}"
+	    rel_path="$(echo "$file" | cut -d/ -f${#slashes}-)"
+	    distfile="$release_dir/$rel_path"
+	    echo "Copying file: $file -> $distfile"
+	    if [ ! -d "$(dirname "$distfile")" ]; then
+		mkdir -p "$(dirname "$distfile")"
+	    fi
+	    cp -a "$file" "$distfile"
+	done
+    done
+}
+
+push_release () {
+    local release_dir
+    release_dir="$1"
+    cd "$release_dir" || exit 1
+    git add .
+    # bump version ?
+    git commit . -m "Release v$ODOO_VERSION"
+    git push -f --set-upstream origin "$ODOO_VERSION"
+}
+
+create_release () {
+    local modules release release_dir repo
+    release="$1"
+    repo=$(echo "$release" | jq -r '.repo')
+    echo "creating release: $repo"
+    fetch_release_repo "$repo"
+    release_dir="dist/release/$(basename "$repo")"
+    for modules in $(echo "$release" | jq -r '.modules[]'); do
+	copy_release_files "$modules" "$release_dir"
+    done
+    push_release "$release_dir"
+}
+
+create_releases () {
+    local release
+    for release in $(jq -c '.release[]' '.addons.config.json'); do
+	create_release "$release"
+    done
+}
+
+create_release_dir
+create_releases
