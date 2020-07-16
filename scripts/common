@@ -1,0 +1,106 @@
+#!/bin/bash
+
+ODOO_VERSION="${ODOO_VERSION:-13}"
+REPO_ROOT="${REPO_ROOT:-$(pwd)}"
+ADDON_CONFIG="${ADDON_CONFIG:-$REPO_ROOT/.addons.config.json}"
+RELEASE_DIR="${RELEASE_DIR:-dist/release}"
+ASSET_DIR="${ASSET_DIR:-dist/assets}"
+BUILD_DIR="${BUILD_DIR:-dist/built}"
+FORCE_BUILD=${FORCE_BUILD:-}
+
+
+copy_extra () {
+    local extra resources
+    extra="$1"
+    pwd
+    for resources in $extra; do
+	cp "$resources" "$ASSET_DIR"
+    done
+}
+
+copy_built_asset () {
+    local addon asset dest
+    asset="$1"
+    addon=$(echo "$asset" | rev | cut -d/ -f1 | cut -d. -f2- | rev)
+    dest="addons/$addon/static/description/icon.png"
+    echo "Copying built asset: $asset -> $dest"
+    if [ ! -d "$(dirname "$dest")" ]; then \
+	mkdir -p "$(dirname "$dest")"
+    fi
+    cp -a "$asset" "$dest"
+}
+
+create_asset_dir () {
+    rm -rf "$ASSET_DIR"
+    mkdir -p "$ASSET_DIR"
+}
+
+create_build_dir () {
+    rm -rf "$BUILD_DIR"
+    mkdir -p "$BUILD_DIR"
+    chmod 777 "$BUILD_DIR"
+}
+
+create_release_dir () {
+    rm -rf "$RELEASE_DIR"
+    mkdir -p "$RELEASE_DIR"
+}
+
+get_built_assets () {
+    find "$BUILD_DIR" -mindepth 1 -maxdepth 1 -name "*.png" -type f
+}
+
+get_asset_config_path () {
+    printf "%s/%s" "$ASSET_DIR" config.json
+}
+
+get_assets () {
+    jq -cr '.assets[]' "$ADDON_CONFIG"
+}
+
+get_icon_asset_path () {
+    local module
+    module="$1"
+    printf "%s/%s.svg" "$ASSET_DIR" "$module"
+}
+
+get_icon_config_path () {
+    local module
+    module="$1"
+    printf "%s/%s" "$(get_module_path "$module")" static/src/images/config.json
+}
+
+get_icon_path () {
+    local module
+    module="$1"
+    printf "%s/%s" "$(get_module_path "$module")" static/description/icon.png
+}
+
+get_icon_src () {
+    local module
+    module="$1"
+    printf "%s/%s" "$(get_module_path "$module")" static/src/images/icon.svg
+}
+
+get_last_commit () {
+    local iconpath
+    iconpath="$1"
+    git log --follow --pretty=format:"%h" "$iconpath"
+}
+
+get_module_path () {
+    local module;
+    module="$1"
+    printf "%s/%s" "$REPO_ROOT" "$module"
+}
+
+get_template () {
+    printf "%s/%s" "$REPO_ROOT" "$1"
+}
+
+run_icon_builder () {
+    docker run -ti --rm \
+	   -v "$(pwd)/${ASSET_DIR}":/tmp/assets \
+	   -v "$(pwd)/${BUILD_DIR}":/tmp/dist \
+	   phlax/iconic run_shell createicon
+}

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+codecov -f /mnt/coverage/coverage.xml

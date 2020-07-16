@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# shellcheck source=./scripts/common
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+
+create_module () {
+    local module modulepath path preserve template tmpdir
+    module="$1"
+    template="$(get_template "$2")"
+    preserve="$3"
+    echo "Creating module from template: $template -> $module"
+    tmpdir=$(mktemp -d)
+    cd "$tmpdir" || exit 1
+    cp -a "$template/"* .
+    for file in $preserve; do
+	path="$(get_module_path "$module")/$file"
+	if [ -e "$path" ]; then
+	    rm -rf "$file"
+	    echo "Copying preserved file: $path -> $file"
+	    cp -a "$path" "$file"
+	fi
+    done
+    modulepath=$(get_module_path "$module")
+    rm -rf "$modulepath"
+    cp -a . "$modulepath"
+    cd "$REPO_ROOT" || exit 1
+    rm -r "$tmpdir"
+}
+
+create_modules () {
+    local mangler module template
+    mangler="$1"
+    template=$(echo "$mangler" | jq -r '.template')
+    preserve=$(echo "$mangler" | jq -cr '.preserve[]')
+    for module in $(echo "$mangler" | jq -r '.modules[]'); do
+	create_module "$module" "$template" "$preserve";
+    done
+}
+
+iterate_manglers () {
+    for mangler in $(jq -c '.addons[]' "$ADDON_CONFIG"); do
+	create_modules "$mangler"
+    done
+}
+
+iterate_manglers
