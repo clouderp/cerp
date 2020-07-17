@@ -24,7 +24,7 @@
 	]
     }],
     "release": [{
-	"repo": "git@github.com:clouderp/odoo-cerp_basic",
+	"repo": "https://cerpbot:$GITHUB_ACCESS_TOKEN@github.com/clouderp/odoo-cerp_basic",
 	"modules": [
 	    "addons/cerp_basic",
 	    "addons/cerp_core",
