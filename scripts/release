@@ -12,7 +12,6 @@ fetch_release_repo () {
     cd "$RELEASE_DIR" || exit 1
     git clone "$release_repo"
     cd "$release_dir" || exit 1
-    git remote set-url origin "$release_repo"
     git fetch origin
     # shellcheck disable=SC2143
     if [ "$(git branch -a | grep -q "^$ODOO_VERSION$")" ]; then
@@ -51,7 +50,7 @@ push_release () {
     git add .
     # bump version ?
     git commit . -m "Release v$ODOO_VERSION"
-    echo "Pushing to repo: $repo"
+    git remote -v
     git push "$repo" "$ODOO_VERSION"
 }
 
