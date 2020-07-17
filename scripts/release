@@ -51,7 +51,7 @@ push_release () {
     git add .
     # bump version ?
     git commit . -m "Release v$ODOO_VERSION"
-    git push -f --set-upstream origin "$ODOO_VERSION" "$repo"
+    git push "$repo" "$ODOO_VERSION"
 }
 
 create_release () {
