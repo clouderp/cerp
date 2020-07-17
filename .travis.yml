@@ -18,3 +18,11 @@ script:
   - docker-compose run $ci_env --rm web-test runtests cerp_basic
   - docker-compose run $ci_env --rm web-test runtests cerp_aws_basic
   - shellcheck -x scripts/*
+
+deploy:
+  provider: script
+  script: make release
+  skip_cleanup: true
+  on:
+    all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^(release)$
