@@ -12,6 +12,7 @@ fetch_release_repo () {
     cd "$RELEASE_DIR" || exit 1
     git clone "$release_repo"
     cd "$release_dir" || exit 1
+    git remote set-url origin "$release_repo"
     git fetch origin
     # shellcheck disable=SC2143
     if [ "$(git branch -a | grep -q "^$ODOO_VERSION$")" ]; then
@@ -43,14 +44,12 @@ copy_release_files () {
 }
 
 push_release () {
-    local release_dir repo
+    local release_dir
     release_dir="$1"
-    repo="$2"
     cd "$release_dir" || exit 1
     git add .
     # bump version ?
     git commit . -m "Release v$ODOO_VERSION"
-    git remote set-url origin "$repo"
     git push -f --set-upstream origin "$ODOO_VERSION"
 }
 
@@ -64,7 +63,7 @@ create_release () {
     for modules in $(echo "$release" | jq -r '.modules[]'); do
 	copy_release_files "$modules" "$release_dir"
     done
-    push_release "$release_dir" "$repo"
+    push_release "$release_dir"
 }
 
 create_releases () {
