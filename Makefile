@@ -6,6 +6,8 @@ SHELL := /bin/bash
 .PHONY: addons
 
 release:
+	git config --global user.email "cerpbot@synca.io"
+	git config --global user.name "cerpbot"
 	./scripts/release
 
 icons:
