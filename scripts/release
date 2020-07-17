@@ -43,12 +43,14 @@ copy_release_files () {
 }
 
 push_release () {
-    local release_dir
+    local release_dir repo
     release_dir="$1"
+    repo="$2"
     cd "$release_dir" || exit 1
     git add .
     # bump version ?
     git commit . -m "Release v$ODOO_VERSION"
+    git remote set-url origin "$repo"
     git push -f --set-upstream origin "$ODOO_VERSION"
 }
 
@@ -62,7 +64,7 @@ create_release () {
     for modules in $(echo "$release" | jq -r '.modules[]'); do
 	copy_release_files "$modules" "$release_dir"
     done
-    push_release "$release_dir"
+    push_release "$release_dir" "$repo"
 }
 
 create_releases () {
