@@ -51,6 +51,7 @@ push_release () {
     git add .
     # bump version ?
     git commit . -m "Release v$ODOO_VERSION"
+    echo "Pushing to repo: $repo"
     git push "$repo" "$ODOO_VERSION"
 }
 
