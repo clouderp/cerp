@@ -1,0 +1,214 @@
+<odoo>
+  <data>
+
+    <record
+	id="view_cerp_module_uninstall"
+	model="ir.ui.view">
+      <field name="name">Uninstall Cloud ERP modules</field>
+      <field name="inherit_id" ref="base.view_base_module_uninstall"/>
+      <field name="mode">primary</field>
+      <field name="model">cerp_core.module.uninstall</field>
+      <field name="arch" type="xml">
+        <data>
+          <xpath
+              expr='//field[@name="model_ids"]'
+              position='replace'>
+            <field name="model_ids" string="Models">
+              <tree string="Models">
+                <field name="name" string="Document"/>
+                <field name="cerp_module_count"/>
+              </tree>
+            </field>
+	  </xpath>
+        </data>
+      </field>
+    </record>
+
+    <record
+	model="ir.ui.view"
+	id="cerp_core.configuration_tree_view">
+      <field name="name">Cloud providers (tree)</field>
+      <field name="model">ir.module.module</field>
+      <field name="inherit_id" ref="base.module_tree"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <data>
+	  <xpath expr="//tree" position="attributes">
+	    <attribute name="edit">false</attribute>
+	    <attribute name="delete">false</attribute>
+	  </xpath>
+	</data>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="module_view_kanban">
+      <field name="name">Apps Kanban</field>
+      <field name="model">ir.module.module</field>
+      <field name="arch" type="xml">
+        <kanban create="false" class="o_modules_kanban">
+          <field name="icon"/>
+          <field name="name"/>
+          <field name="state"/>
+          <field name="summary"/>
+          <field name="website"/>
+          <field name="application"/>
+          <templates>
+            <t t-name="kanban-box">
+              <div class="oe_module_vignette">
+                <t t-set="installed" t-value="record.state.raw_value == 'installed'"/>
+                <div class="o_dropdown_kanban dropdown" tabindex="-1">
+                  <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" data-display="static" href="#" role="button" aria-label="Dropdown menu" title="Dropdown menu">
+                    <span class="fa fa-ellipsis-v"/>
+                  </a>
+                  <div class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                    <a type="edit" class="dropdown-item">Module Info</a>
+                    <a t-if="record.website.raw_value" role="menuitem" class="dropdown-item" t-att-href="record.website.raw_value" target="_blank">Learn More</a>
+                    <a t-if="installed" name="button_immediate_upgrade" type="object" role="menuitem" class="dropdown-item">Upgrade</a>
+                    <a t-if="installed" name="button_uninstall_wizard" type="object" role="menuitem" class="dropdown-item">Uninstall</a>
+                            </div>
+                </div>
+                <img t-attf-src="#{record.icon.value}" class="oe_module_icon" alt="Icon"/>
+                <div class="oe_module_desc" t-att-title="record.shortdesc.value">
+                  <h4 class="o_kanban_record_title">
+                    <field name="shortdesc"/>&amp;nbsp;
+                  </h4>
+                  <p class="oe_module_name">
+                    <field groups="!base.group_no_one" name="summary"/>
+                    <code groups="base.group_no_one"><field name="name"/></code>
+                  </p>
+                  <div class="oe_module_action">
+                    <a t-att-href="record.website.raw_value" target="_blank" attrs="{'invisible':[('website', '=', '')]}" class="btn btn-sm btn-secondary float-right" role="button">Learn More</a>
+                    <a type="edit" class="btn btn-secondary btn-sm float-right" role="button" attrs="{'invisible': [('website', '&lt;&gt;', '')]}">Module Info</a>
+                    <button type="object" class="btn btn-primary btn-sm" name="button_immediate_install" states="uninstalled">Install</button>
+                    <div t-if="installed" class="text-muted float-left">Installed</div>
+                    <button states="to remove" type="object" class="btn btn-sm btn-primary" name="button_uninstall_cancel">Cancel Uninstall</button>
+                    <button states="to install" type="object" class="btn btn-sm btn-primary" name="button_install_cancel">Cancel Install</button>
+                  </div>
+                </div>
+              </div>
+            </t>
+          </templates>
+        </kanban>
+      </field>
+    </record>
+
+
+    <record
+	model="ir.ui.view"
+	id="cerp_core.configuration_kanban_view">
+      <field name="name">Cloud providers</field>
+      <field name="model">ir.module.module</field>
+      <field name="inherit_id" ref="cerp_core.module_view_kanban"/>
+      <field name="mode">primary</field>
+      <field name="arch" type="xml">
+        <data>
+          <xpath
+              expr="//templates"
+              position='before'>
+            <field name="cerp_provider_account"/>
+            <field name="cerp_is_visible"/>
+            <field name="cerp_can_upgrade"/>
+            <field name="cerp_can_immediate_upgrade"/>
+	  </xpath>
+          <xpath
+              expr="//a[@name='button_uninstall_wizard']"
+              position='replace'>
+	    <a role="menuitem"
+	       class="dropdown-item"
+	       name="button_cerp_uninstall_wizard"
+	       states="installed"
+	       type="object">Uninstall</a>
+	  </xpath>
+          <xpath
+              expr="//div[hasclass('oe_module_action')]"
+              position='replace'>
+	    <button
+		type="object"
+		class="btn btn-primary btn-sm"
+		t-if="record.cerp_can_immediate_upgrade.raw_value"
+		name="button_cerp_install">Upgrade available, install now!</button>
+	    <button
+		type="object"
+		class="btn btn-primary btn-sm"
+		t-if="record.cerp_can_upgrade.raw_value"
+		name="button_cerp_upgrade">Upgrade to pro</button>
+	    <button
+		type="object"
+		class="btn btn-primary btn-sm"
+		name="button_cerp_install"
+		t-if="! record.cerp_can_immediate_upgrade.raw_value"
+		states="uninstalled">Install</button>
+          </xpath>
+        </data>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="cerp_core.account_form_view">
+      <field name="name">Create: Cloud account</field>
+      <field name="model">cerp_core.account</field>
+      <field name="arch" type="xml">
+        <form
+	    edit="true"
+	    create="false"
+	    delete="false">
+          <sheet>
+            <group colspan='4'>
+              <field
+		  name="credentials_input"
+		  class="oe_edit_only"/>
+              <field
+		  name="credentials"
+		  class="oe_read_only"/>
+	      <field
+		  name="provider"
+		  readonly="1" />
+	      <field
+		  name="metricsets"
+		  readonly="1"
+		  class="oe_read_only"/>
+	    </group>
+	    <button
+		string="Save and view"
+		name="cerp_account_save"
+		type="object"/>
+	  </sheet>
+	</form>
+      </field>
+    </record>
+
+    <record
+	id="cerp_core.action_configuration_window"
+	model="ir.actions.act_window">
+      <field name="name">Cloud connectors</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">ir.module.module</field>
+      <field name="domain">[('name', '=like', 'cerp_%'), ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro']), ('cerp_is_visible', '=', True)]</field>
+      <field name="view_mode">kanban,tree</field>
+    </record>
+    <record
+	model="ir.actions.act_window.view"
+	id="cerp_core.action_configuration_window_kanban">
+      <field name="sequence" eval="1"/>
+      <field name="view_mode">kanban</field>
+      <field name="view_id" ref="cerp_core.configuration_kanban_view"/>
+      <field name="act_window_id" ref="cerp_core.action_configuration_window"/>
+    </record>
+    <record
+	model="ir.actions.act_window.view"
+	id="cerp_core.action_configuration_window_tree">
+      <field name="sequence" eval="1"/>
+      <field name="view_mode">tree</field>
+      <field name="view_id" ref="cerp_core.configuration_tree_view"/>
+      <field name="act_window_id" ref="cerp_core.action_configuration_window"/>
+    </record>
+
+    <record
+	id="cerp_core.action_configure_window"
+	model="ir.actions.act_window">
+      <field name="name">Account</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_core.account</field>
+      <field name="view_mode">form</field>
+    </record>
+  </data>
+</odoo>

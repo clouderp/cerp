@@ -1,0 +1,28 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="cerp_core.log_tree_view">
+      <field name="name">Cloud ERP logs</field>
+      <field name="model">cerp_core.log</field>
+      <field name="arch" type="xml">
+	<tree
+	    default_order="create_date desc"
+	    edit="false"
+	    create="false">
+          <field name="create_date"/>
+          <field name="create_uid"/>
+          <field name="log_type"/>
+          <field name="module_name"/>
+          <field name="message"/>
+        </tree>
+      </field>
+    </record>
+    <record
+	id="cerp_core.action_logs_window"
+	model="ir.actions.act_window">
+      <field name="name">Logs</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_core.log</field>
+      <field name="view_mode">tree</field>
+    </record>
+  </data>
+</odoo>

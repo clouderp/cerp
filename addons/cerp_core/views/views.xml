@@ -1,0 +1,120 @@
+<odoo>
+  <data>
+    <record model="ir.ui.view" id="cerp_core.account_kanban_view">
+      <field name="name">Cloud accounts</field>
+      <field name="model">cerp_core.account</field>
+      <field name="arch" type="xml">
+	<kanban
+	    edit="false"
+	    create="false"
+	    delete="false"
+	    class="o_cerp_core_account_kanban">
+          <field name="name"/>
+          <field name="provider_icon"/>
+          <field name="provider_module"/>
+	  <templates>
+            <t t-name="kanban-box">
+              <div class="oe_module_vignette">
+                <div class="o_dropdown_kanban dropdown" tabindex="-1">
+                  <a class="dropdown-toggle o-no-caret btn"
+		     data-toggle="dropdown"
+		     data-display="static"
+		     href="#"
+		     role="button"
+		     aria-label="Dropdown menu"
+		     title="Dropdown menu">
+                    <span class="fa fa-ellipsis-v"/>
+                  </a>
+                  <div class="dropdown-menu"
+		       role="menu"
+		       aria-labelledby="dLabel">
+                    <a type="edit"
+		       class="dropdown-item">Module Info</a>
+                  </div>
+		</div>
+		<img t-att-src="record.provider_icon.value"
+		     class="oe_module_icon"
+		     alt="Icon"/>
+                <div class="oe_module_desc"
+		     t-att-title="record.name.value">
+                  <h4 class="o_kanban_record_title">
+		    <field name="provider_name" />
+		    (<field name="provider_type" />)
+                  </h4>
+                  <p class="oe_module_name">
+		    COSTS
+		    <!--
+			<field groups="!base.group_no_one" name="summary"/>
+			<code groups="base.group_no_one"><field name="name"/></code>
+		    -->
+                  </p>
+                  <p class="cerp-kanban-graph">
+		    GRAPH
+                    <button
+			type="action"
+			name="cerp_core.action_account_graph_window"
+			class="btn btn-secondary btn-sm"
+			target="self">View metrics</button>
+                    <button
+			type="object"
+			name="button_update"
+			class="btn btn-secondary btn-sm"
+			target="self">Update</button>
+
+		    <!--
+			<field groups="!base.group_no_one" name="summary"/>
+			<code groups="base.group_no_one"><field name="name"/></code>
+		    -->
+                  </p>
+                  <div class="oe_module_action">
+                    <a href="upgrade"
+		       target="_blank"
+		       class="btn btn-sm btn-secondary float-right"
+		       role="button">Upgrade to pro</a>
+		    <!--
+                    <a t-att-href="record.website.raw_value" target="_blank" attrs="{'invisible':[('website', '=', '')]}" class="btn btn-sm btn-secondary float-right" role="button">Learn More</a>
+                    <a type="edit" class="btn btn-secondary btn-sm float-right" role="button" attrs="{'invisible': [('website', '&lt;&gt;', '')]}">Module Info</a>
+                    <button type="object" class="btn btn-primary btn-sm" name="button_immediate_install" states="uninstalled" t-if="! record.to_buy.raw_value">Install</button>
+                    <a href="https://odoo.com/pricing?utm_source=db&amp;utm_medium=module#hosting=on_premise" class="btn btn-info btn-sm" states="uninstalled,uninstallable" t-if="record.to_buy.raw_value" role="button">Upgrade</a>
+                    <div t-if="installed" class="text-muted float-left">Installed</div>
+                    <button states="to remove" type="object" class="btn btn-sm btn-primary" name="button_uninstall_cancel">Cancel Uninstall</button>
+                    <button states="to install" type="object" class="btn btn-sm btn-primary" name="button_install_cancel">Cancel Install</button>
+		    -->
+                  </div>
+                </div>
+	      </div>
+            </t>
+          </templates>
+	</kanban>
+      </field>
+    </record>
+
+    <record
+	id="cerp_core.action_account_graph_window"
+	model="ir.actions.act_window">
+      <field name="name">Cloud account</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_core.account</field>
+      <field name="view_mode">graph</field>
+    </record>
+
+    <record
+	id="cerp_core.action_window"
+	model="ir.actions.act_window">
+      <field name="name">Cloud accounts</field>
+      <field name="type">ir.actions.act_window</field>
+      <field name="res_model">cerp_core.account</field>
+      <field name="view_mode">kanban</field>
+      <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+	  No Cloud ERP accounts created yet.
+	  <p>
+	    <a type="action" name="%(cerp_core.action_configuration_window)d" tabindex="-1">
+	      Setup a connector now.
+	    </a>
+	  </p>
+        </p>
+      </field>
+    </record>
+  </data>
+</odoo>
