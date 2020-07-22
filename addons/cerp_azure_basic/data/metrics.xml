@@ -1,0 +1,41 @@
+<odoo>
+  <data>
+    <record
+	model="cerp_core.account_provider"
+	id="cerp_account_provider">
+      <field name="name">AZURE</field>
+      <field name="key_namespace">azure</field>
+      <field
+	  name="module"
+	  ref="base.module_cerp_azure_basic" />
+    </record>
+
+    <record
+	model="cerp_core.metricset"
+	id="metric_azure_costs_monthly">
+      <field name="name">azure.costs.monthly</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+    <record
+	model="cerp_core.metricset"
+	id="metric_azure_costs_daily">
+      <field name="name">azure.costs.daily</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+    <record
+	model="cerp_core.metric.type"
+	id="metric_type_azure_costs_monthly">
+      <field name="name">azure.costs.monthly</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+  </data>
+</odoo>
