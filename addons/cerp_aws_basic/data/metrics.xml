@@ -1,0 +1,41 @@
+<odoo>
+  <data>
+    <record
+	model="cerp_core.account_provider"
+	id="cerp_account_provider">
+      <field name="name">AWS</field>
+      <field name="key_namespace">aws</field>
+      <field
+	  name="module"
+	  ref="base.module_cerp_aws_basic" />
+    </record>
+
+    <record
+	model="cerp_core.metricset"
+	id="metric_aws_costs_monthly">
+      <field name="name">aws.costs.monthly</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+    <record
+	model="cerp_core.metricset"
+	id="metric_aws_costs_daily">
+      <field name="name">aws.costs.daily</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+    <record
+	model="cerp_core.metric.type"
+	id="metric_type_aws_costs_monthly">
+      <field name="name">aws.costs.monthly</field>
+      <field
+	  name="provider"
+	  ref="cerp_account_provider" />
+    </record>
+
+  </data>
+</odoo>
