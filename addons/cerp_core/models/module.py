@@ -21,18 +21,20 @@ _logger = logging.getLogger(__name__)
 class CloudERPModule(models.Model):
     _inherit = 'ir.module.module'
 
+    cerp_state = fields.Selection(
+        [('not_cerp', 'Unrelated'),
+         ('visible', 'Visible'),
+         ('can_upgrade', 'Update available'),
+         ('can_upgrade_immediate', 'Update installable'),
+         ('can_upgrade_pro', 'Pro version available'),
+         ('can_upgrade_pro_immediate', 'Pro version installable')],
+        default='not_cerp',
+        compute='compute_cerp_state',
+        search='_cerp_state_search')
+
     cerp_providers = fields.One2many(
         'cerp_core.account_provider',
         'module')
-    cerp_is_visible = fields.Boolean(
-        compute='compute_cerp_is_visible',
-        search='_cerp_is_visible_search')
-    cerp_can_upgrade = fields.Boolean(
-        compute='compute_cerp_can_upgrade',
-        search='_cerp_can_upgrade_search')
-    cerp_can_immediate_upgrade = fields.Boolean(
-        compute='compute_cerp_can_immediate_upgrade',
-        search='_cerp_can_immediate_upgrade_search')
     cerp_provider = fields.Many2one(
         'cerp_core.account_provider',
         compute='compute_cerp_provider',
@@ -48,65 +50,46 @@ class CloudERPModule(models.Model):
         'Account name',
         related='cerp_provider.account_name')
 
-    def _cerp_is_visible_search(self, operator, value):
+    def _cerp_state_search(self, operator, value):
         _search = [
             ('name', '=like', 'cerp_%'),
             ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro'])]
-        recs = self.search(_search).filtered(
-            lambda x: x.cerp_is_visible is True)
-        if recs:
-            return [('id', 'in', [x.id for x in recs])]
-
-    def _cerp_can_upgrade_search(self, operator, value):
-        _search = [
-            ('name', '=like', 'cerp_%'),
-            ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro']),
-            ('sequence', '>', '100')]
-        recs = self.search(_search)
-        if recs:
-            return [('id', 'in', [x.id for x in recs])]
-
-    def _cerp_can_immediate_upgrade_search(self, operator, value):
-        _search = [
-            ('name', '=like', 'cerp_%'),
-            ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro']),
-            ('sequence', '<=', '100'),
-            ('state', '!=', 'installed')]
-        recs = self.search(_search)
+        if operator == 'in':
+            recs = self.search(_search).filtered(
+                lambda x: x.cerp_state in value)
+        else:
+            recs = self.search(_search).filtered(
+                lambda x: x.cerp_state == value)
         if recs:
             return [('id', 'in', [x.id for x in recs])]
 
     @api.depends()
-    def compute_cerp_can_immediate_upgrade(self):
-        _search = [
-            ('name', '=like', 'cerp_%'),
-            ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro']),
-            ('sequence', '>', '100'),
-            ('state', '=', 'installed')]
-        basic_modules = [x.name.split('_')[1] for x in self.search(_search)]
-        for rec in self:
-            cerp_type = rec.name.split('_')[1]
-            rec.cerp_can_immediate_upgrade = (
-                rec.sequence <= 100
-                and cerp_type in basic_modules
-                and rec.state != "installed")
-
-    @api.depends()
-    def compute_cerp_can_upgrade(self):
-        for rec in self:
-            rec.cerp_can_upgrade = rec.sequence > 100
-
-    @api.depends()
-    def compute_cerp_is_visible(self):
+    def compute_cerp_state(self):
         _records = {}
+        basic_modules = []
         for rec in self:
             cerp_type = rec.name.split('_')[1]
+            if rec.sequence > 100 and rec.state == 'installed':
+                basic_modules.append(cerp_type)
             name, sequence = _records.get(cerp_type, (None, None))
             if name is None or (sequence > rec.sequence):
                 _records[cerp_type] = (rec.name, rec.sequence)
         visible = [x[0] for x in _records.values()]
         for rec in self:
-            rec.cerp_is_visible = rec.name in visible
+            if rec.name in visible:
+                cerp_type = rec.name.split('_')[1]
+                immediate_upgrade_pro = (
+                    rec.sequence <= 100
+                    and cerp_type in basic_modules
+                    and rec.state != "installed")
+                if immediate_upgrade_pro:
+                    rec.cerp_state = 'can_upgrade_pro_immediate'
+                elif rec.sequence > 100:
+                    rec.cerp_state = 'can_upgrade_pro'
+                else:
+                    rec.cerp_state = 'visible'
+            else:
+                rec.cerp_state = 'not_cerp'
 
     @api.depends('cerp_providers')
     def compute_cerp_provider(self):

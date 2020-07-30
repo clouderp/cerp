@@ -92,7 +92,6 @@
       </field>
     </record>
 
-
     <record
 	model="ir.ui.view"
 	id="cerp_core.configuration_kanban_view">
@@ -106,9 +105,7 @@
               expr="//templates"
               position='before'>
             <field name="cerp_provider_account"/>
-            <field name="cerp_is_visible"/>
-            <field name="cerp_can_upgrade"/>
-            <field name="cerp_can_immediate_upgrade"/>
+            <field name="cerp_state"/>
 	  </xpath>
           <xpath
               expr="//a[@name='button_uninstall_wizard']"
@@ -125,18 +122,18 @@
 	    <button
 		type="object"
 		class="btn btn-primary btn-sm"
-		t-if="record.cerp_can_immediate_upgrade.raw_value"
+		t-if="record.cerp_state.raw_value == 'can_upgrade_pro_immediate'"
 		name="button_cerp_install">Upgrade available, install now!</button>
 	    <button
 		type="object"
 		class="btn btn-primary btn-sm"
-		t-if="record.cerp_can_upgrade.raw_value"
+		t-if="record.cerp_state.raw_value == 'can_upgrade_pro'"
 		name="button_cerp_upgrade">Upgrade to pro</button>
 	    <button
 		type="object"
 		class="btn btn-primary btn-sm"
 		name="button_cerp_install"
-		t-if="! record.cerp_can_immediate_upgrade.raw_value"
+		t-if="record.cerp_state.raw_value != 'can_upgrade_pro_immediate'"
 		states="uninstalled">Install</button>
           </xpath>
         </data>
@@ -182,7 +179,7 @@
       <field name="name">Cloud connectors</field>
       <field name="type">ir.actions.act_window</field>
       <field name="res_model">ir.module.module</field>
-      <field name="domain">[('name', '=like', 'cerp_%'), ('name', 'not in', ['cerp_basic', 'cerp_core', 'cerp_pro']), ('cerp_is_visible', '=', True)]</field>
+      <field name="domain">[('cerp_state', 'in', ['visible', 'can_upgrade', 'can_upgrade_pro'])]</field>
       <field name="view_mode">kanban,tree</field>
     </record>
     <record
