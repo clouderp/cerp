@@ -63,27 +63,18 @@ class TestCloudERPModuleUninstall(TestCloudERPModels):
         wizard.ensure_one = MagicMock()
         _module_id = type(wizard).module_id
         type(wizard).module_id = MagicMock()
-        result = wizard.action_uninstall()
+
+        _patch = self._patch('models.uninstall.utils.success_action')
+        with _patch as success_mock:
+            result = wizard.action_uninstall()
+
         assert wizard.ensure_one.called
         assert wizard.module_id.button_immediate_uninstall.called
         assert (
-            list(wizard.env.__getitem__.call_args)
-            == [('cerp_core.message.wizard',), {}])
-        wizard_create = wizard.env.__getitem__.return_value.create
-        assert (
-            list(wizard_create.call_args)
-            == [({'message':
-                  ("Module (%s) uninstalled"
-                   % wizard.module_id.name)},),
-                {}])
-        assert (
-            result
-            == {'name': 'Success',
-                'type': 'ir.actions.act_window',
-                'view_mode': 'form',
-                'res_model': 'cerp_core.message.wizard',
-                'res_id': wizard_create.return_value.id,
-                'target': 'new'})
+            list(success_mock.call_args)
+            == [(wizard.env,
+                 "Module (%s) uninstalled" % (wizard.module_id.name)), {}])
+        assert result == success_mock.return_value
         type(wizard).module_id = _module_id
 
     def test_compute_model_ids(self):
